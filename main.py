@@ -1,15 +1,27 @@
 from tkinter import *
 import mysql.connector
 from tkinter import messagebox as mb
+import sys
+import os
+
 
 root = Tk()
 root.title("Databases")
-root.geometry("300x200")
+root.geometry("350x300")
+root.config(bg="light blue")
+canvas = Canvas(root, width=335, height=135, bg="light blue")
+canvas.place(x=0, y=125)
+img = PhotoImage(file="index.png")
+canvas.create_image(20, 20, anchor=NW, image=img)
+
+
+def restart():
+    py = sys.executable
+    os.execl(py, py, * sys.argv)
 
 
 def register():
     root.destroy()
-
     def create():
         fn = fName.get()
         us = username.get()
@@ -23,21 +35,23 @@ def register():
             auth_plugin="mysql_native_password")
 
         try:
-            mycursor = mydb.cursor()
-            sql = "Insert into users(full_name, username, password) values(%s,%s,%s)"
-            mycursor.execute(sql, [(fn), (us), (pw)])
-            mydb.commit()
-            mb.showinfo("success", "Successfully registered")
-            reg.destroy()
+            if fName.get() == '' or username.get() == "":
+                mb.showerror()
+            else:
+
+                mycursor = mydb.cursor()
+                sql = "Insert into users(full_name, username, password) values(%s,%s,%s)"
+                mycursor.execute(sql, [(fn), (us), (pw)])
+                mydb.commit()
+                mb.showinfo("success", "Successfully registered")
+                reg.destroy()
         except:
-            mb.showerror("Error","Error connecting to mysql")
-            
-
-
+            mb.showerror("Error", "Error connecting to mysql")
 
     reg = Tk()
     reg.title("Registration")
     reg.geometry("450x450")
+    reg.config(bg="yellow")
 
     fName_lbl = Label(reg, text="Full Name:")
     user_lbl = Label(reg, text="Username:")
@@ -46,6 +60,7 @@ def register():
     username = Entry(reg)
     password = Entry(reg, show="*")
     reg_btn = Button(reg, text="Register", command=create)
+    bck_btn = Button(reg, text="Back to MAIN MENU", command=restart)
 
     fName_lbl.place(x=5, y=10)
     user_lbl.place(x=5, y=55)
@@ -54,51 +69,143 @@ def register():
     username.place(x=80, y=55)
     password.place(x=80, y=100)
     reg_btn.place(x=150, y=150)
+    bck_btn.place(x=200, y=250)
 
 
-def admin_login():
-    mb.showinfo("Success","Admin login successful")
-    main = Tk()
-    main.title("Databases")
-    main.geometry("450x450")
-
-    disp = Label(main, borderwidth=2, relief="ridge", width=55, anchor='w')
-
-    disp.place(x=5, y=5)
-
-    mybd = mysql.connector.connect(
+def admin_menu():
+    def display():
+        mydb = mysql.connector.connect(
         host="localhost",
         user="lifechoices",
         password="@Lifechoices1234",
         database="LifechoicesOnline",
-        auth_plugin="mysql_native_password"
-    )
+        auth_plugin="mysql_native_password")
 
-    mycursor = mybd.cursor()
-    xy = mycursor.execute('Select * from users')
-    for i in mycursor:
-        data = str(i)
-        data = data[1: -1]
-        data = data.split(',')
-        disp['text'] += "\n"+str(data)
+        mycursor= mydb.cursor()
+        mycursor.execute("select * from users")
+
+        for i in mycursor:
+            listbox.insert('end', str(i))
+
+    def remove():
+        import mysql.connector
+        mydb = mysql.connector.connect(
+        host="localhost",
+        user="lifechoices",
+        password="@Lifechoices1234",
+        database="LifechoicesOnline",
+        auth_plugin="mysql_native_password")
+
+        mycursor= mydb.cursor()
+        remove_id =StringVar()
+        user_id = id_get.get()
+
+        mysql = "delete from users where id = %s,full_name = %s, username = %s, password = %s;"
+        mycursor.execute(mysql,[user_id])
+        mydb.commit()
+        mydb.close()
+        # try:
+        #     mycursor.execute(mysql)
+        #     mysql.commit()
+        #     mb.showinfo("Success", "You have SUCCESSFULLY removed a user with id=+user")
+        # except:
+        #     mb.showerror("ERROR","Error connecting to MySql")
+
+
+    def insertion():
+        mydb = mysql.connector.connect(
+        host="localhost",
+        user="lifechoices",
+        password="@Lifechoices1234",
+        database="LifechoicesOnline",
+        auth_plugin="mysql_native_password")
+
+        mycursor= mydb.cursor()
+        mycursor.execute("update * from users")
+
+        for i in mycursor:
+            listbox.insert('end',str(i))
+
+    def improve():
+        mydb = mysql.connector.connect(
+        host="localhost",
+        user="lifechoices",
+        password="@Lifechoices1234",
+        database="LifechoicesOnline",
+        auth_plugin="mysql_native_password")
+
+        mycursor= mydb.cursor()
+        mycursor.execute("select * from users")
+
+        for i in mycursor:
+            listbox.insert('end', str(i))
+
+    adm = Tk()
+    adm.title("Admin Menu")
+    adm.geometry("500x500")
+    adm.config(bg="green")
+
+    sel_btn = Button(adm, text="Display Registered Users", command=display)
+    del_btn = Button(adm, text="Delete", command=remove)
+    ins_btn = Button(adm, text="Insert", command=insertion)
+    upd_btn = Button(adm, text="Update", command=improve)
+    listbox = Listbox(adm, width=70)
+
+    sel_btn.place(x=5, y=100)
+    del_btn.place(x=200, y=100)
+    ins_btn.place(x=200, y=150)
+    upd_btn.place(x=200, y=200)
+    listbox.place(x=5, y=230)
+    id_get = Entry(adm)
+    id_get.place(x=3,y=30)
+    adm.mainloop()
+
 
 def admin():
-        root.destroy()
-        admin = Tk()
-        admin.title("Administration Login")
-        admin.geometry("450x450")
+    root.destroy()
 
-        user_lbl = Label(admin, text="Username:")
-        pswrd_lbl = Label(admin, text="Password:")
-        username = Entry(admin)
-        password = Entry(admin, show="*")
-        admin_btn = Button(admin, text="LOGIN", command=admin_login)
+    def admin_login():
+        mydb = mysql.connector.connect(
+            host="localhost",
+            user="lifechoices",
+            password="@Lifechoices1234",
+            database="LifechoicesOnline",
+            auth_plugin="mysql_native_password"
+        )
 
-        user_lbl.place(x=5, y=55)
-        pswrd_lbl.place(x=5, y=100)
-        username.place(x=80, y=55)
-        password.place(x=80, y=100)
-        admin_btn.place(x=150, y=150)
+        mycursor = mydb.cursor()
+        usr1 = username1.get()
+        psw1 = password1.get()
+        sql = "select * from adminlogin where username = %s and password = %s"
+        mycursor.execute(sql, [usr1, psw1])
+        result1 = mycursor.fetchall()
+
+        if result1:
+            for i in result1:
+                mb.showinfo("Welcome", "Admin login successful")
+                admin_menu()
+                break
+        else:
+            mb.showerror("Login Fail", "Error Somewhere")
+
+    admin = Tk()
+    admin.title("Administration Login")
+    admin.geometry("450x450")
+    admin.config(bg="black")
+
+    user_lbl = Label(admin, text="Username:")
+    pswrd_lbl = Label(admin, text="Password:")
+    username1 = Entry(admin)
+    password1 = Entry(admin, show="*")
+    admin_btn = Button(admin, text="LOGIN", command=admin_login)
+    bck_btn = Button(admin, text="Back to MAIN MENU", command=restart)
+
+    user_lbl.place(x=5, y=55)
+    pswrd_lbl.place(x=5, y=100)
+    username1.place(x=80, y=55)
+    password1.place(x=80, y=100)
+    admin_btn.place(x=150, y=150)
+    bck_btn.place(x=200, y=250)
 
 
 def verify():
@@ -121,7 +228,6 @@ def verify():
         if result:
             for i in result:
                 logged()
-                root.destroy()
                 break
         else:
             mb.showerror("Login Fail", "Error Somewhere")
