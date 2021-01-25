@@ -88,29 +88,24 @@ def admin_menu():
             listbox.insert('end', str(i))
 
     def remove():
+        print(type(x),x)
         import mysql.connector
         mydb = mysql.connector.connect(
         host="localhost",
         user="lifechoices",
         password="@Lifechoices1234",
         database="LifechoicesOnline",
-        auth_plugin="mysql_native_password")
+        auth_plugin ="mysql_native_password")
 
-        mycursor= mydb.cursor()
-        remove_id =StringVar()
-        user_id = id_get.get()
+        mycursor = mydb.cursor()
+        try:
+            sql = "Delete from users where id=%s"
+            mycursor.execute(sql, [x])
+            mydb.commit()
+        except:
+            mb.showerror("error")
 
-        mysql = "delete from users where id = %s,full_name = %s, username = %s, password = %s;"
-        mycursor.execute(mysql,[user_id])
-        mydb.commit()
-        mydb.close()
-        # try:
-        #     mycursor.execute(mysql)
-        #     mysql.commit()
-        #     mb.showinfo("Success", "You have SUCCESSFULLY removed a user with id=+user")
-        # except:
-        #     mb.showerror("ERROR","Error connecting to MySql")
-
+        print(mycursor.rowcount, "record removed.")
 
     def insertion():
         mydb = mysql.connector.connect(
@@ -121,10 +116,10 @@ def admin_menu():
         auth_plugin="mysql_native_password")
 
         mycursor= mydb.cursor()
-        mycursor.execute("update * from users")
+        mycursor.execute("insert * from users")
 
         for i in mycursor:
-            listbox.insert('end',str(i))
+            listbox.insert('end', str(i))
 
     def improve():
         mydb = mysql.connector.connect(
@@ -144,20 +139,20 @@ def admin_menu():
     adm.title("Admin Menu")
     adm.geometry("500x500")
     adm.config(bg="green")
-
+    id_get = Entry(adm)
+    x=id_get.get()
     sel_btn = Button(adm, text="Display Registered Users", command=display)
     del_btn = Button(adm, text="Delete", command=remove)
     ins_btn = Button(adm, text="Insert", command=insertion)
     upd_btn = Button(adm, text="Update", command=improve)
     listbox = Listbox(adm, width=70)
-
     sel_btn.place(x=5, y=100)
     del_btn.place(x=200, y=100)
     ins_btn.place(x=200, y=150)
     upd_btn.place(x=200, y=200)
     listbox.place(x=5, y=230)
-    id_get = Entry(adm)
-    id_get.place(x=3,y=30)
+
+    id_get.place(x=3, y=30)
     adm.mainloop()
 
 
